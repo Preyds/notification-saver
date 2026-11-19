@@ -15,6 +15,27 @@ data class SavedNotification(
     val time: Long
 )
 
+object Retention {
+    val labels = listOf("1 minute (test)", "1 day", "7 days", "30 days")
+    private val millis = listOf(
+        60_000L, 86_400_000L, 7 * 86_400_000L, 30 * 86_400_000L
+    )
+
+    fun index(context: Context): Int =
+        context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+            .getInt("retention_index", 2)
+
+    fun setIndex(context: Context, i: Int) {
+        context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+            .edit().putInt("retention_index", i).apply()
+    }
+
+    fun cleanup(context: Context) {
+        val cutoff = System.currentTimeMillis() - millis[index(context)]
+        NotificationDb(context).deleteOlderThan(cutoff)
+    }
+}
+
 class NotificationDb(context: Context) :
     SQLiteOpenHelper(context.applicationContext, "notifications.db", null, 1) {
 
@@ -35,6 +56,10 @@ class NotificationDb(context: Context) :
             put("time", n.time)
         }
         writableDatabase.insert("notes", null, v)
+    }
+
+    fun deleteOlderThan(cutoff: Long) {
+        writableDatabase.delete("notes", "time < ?", arrayOf(cutoff.toString()))
     }
 
     fun all(): List<SavedNotification> {
@@ -71,5 +96,6 @@ class NotificationCaptureService : NotificationListenerService() {
         NotificationDb(this).add(
             SavedNotification(sbn.packageName, title, text, sbn.postTime)
         )
+        Retention.cleanup(this)
     }
 }
