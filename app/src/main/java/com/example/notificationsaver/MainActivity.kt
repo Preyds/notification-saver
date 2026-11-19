@@ -156,6 +156,11 @@ class MainActivity : Activity() {
         }
 
         root.addView(topRow)
+        val fixBtn = Button(this).apply {
+            text = "Fix background issues"
+            setOnClickListener { Reliability.showFixDialog(this@MainActivity) }
+        }
+        root.addView(fixBtn)
         root.addView(status)
         root.addView(label)
         root.addView(spinner)
@@ -181,8 +186,9 @@ class MainActivity : Activity() {
         Retention.cleanup(this)
         val full = SimpleDateFormat("dd MMM HH:mm:ss", Locale.getDefault())
         val t = getSharedPreferences("status", MODE_PRIVATE).getLong("connected", 0L)
-        status.text = if (t == 0L) "Listener: NOT connected yet"
+        val conn = if (t == 0L) "Listener: NOT connected yet"
         else "Listener connected: ${full.format(Date(t))}"
+        status.text = conn + "\n" + Reliability.summary(this)
 
         allItems = NotificationDb(this).allRows()
         applyFilter()
