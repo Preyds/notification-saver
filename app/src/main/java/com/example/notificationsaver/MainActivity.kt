@@ -29,10 +29,16 @@ class MainActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             setPadding(32, 96, 32, 32)
         }
-        val button = Button(this).apply {
+        val accessBtn = Button(this).apply {
             text = "Grant notification access"
             setOnClickListener {
                 startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+            }
+        }
+        val appsBtn = Button(this).apply {
+            text = "Choose apps to save"
+            setOnClickListener {
+                startActivity(Intent(this@MainActivity, AppPickerActivity::class.java))
             }
         }
         status = TextView(this).apply {
@@ -67,7 +73,8 @@ class MainActivity : Activity() {
         }
         val scroll = ScrollView(this).apply { addView(listText) }
 
-        root.addView(button)
+        root.addView(accessBtn)
+        root.addView(appsBtn)
         root.addView(status)
         root.addView(label)
         root.addView(spinner)
@@ -86,6 +93,14 @@ class MainActivity : Activity() {
         refresh()
     }
 
+    private fun appName(pkg: String): String = try {
+        packageManager.getApplicationLabel(
+            packageManager.getApplicationInfo(pkg, 0)
+        ).toString()
+    } catch (e: Exception) {
+        pkg
+    }
+
     private fun refresh() {
         Retention.cleanup(this)
         val fmt = SimpleDateFormat("dd MMM HH:mm:ss", Locale.getDefault())
@@ -98,7 +113,7 @@ class MainActivity : Activity() {
             "No notifications captured yet."
         } else {
             items.joinToString("\n\n") {
-                "${fmt.format(Date(it.time))} · ${it.app}\n${it.title}\n${it.text}"
+                "${fmt.format(Date(it.time))} · ${appName(it.app)}\n${it.title}\n${it.text}"
             }
         }
     }
