@@ -80,6 +80,12 @@ class NotificationDb(context: Context) :
 }
 
 class NotificationCaptureService : NotificationListenerService() {
+    override fun onListenerDisconnected() {
+      super.onListenerDisconnected()
+        requestRebind(
+            android.content.ComponentName(this, NotificationCaptureService::class.java)
+        )
+        }
 
     override fun onListenerConnected() {
         getSharedPreferences("status", MODE_PRIVATE).edit()
