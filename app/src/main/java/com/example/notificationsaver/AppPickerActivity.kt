@@ -46,9 +46,11 @@ class AppPickerActivity : Activity() {
             .sortedBy { it.second.lowercase() }
         val saved = AllowList.get(this)
 
-        val root = LinearLayout(this).apply {
+         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(32, 96, 32, 32)
+            setBackgroundColor(ThemeManager.bg(this@AppPickerActivity))
+                }
         }
         val title = TextView(this).apply {
             text = "Save notifications from:"
