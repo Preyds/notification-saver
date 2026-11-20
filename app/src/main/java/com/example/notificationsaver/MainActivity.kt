@@ -284,7 +284,7 @@ class MainActivity : Activity() {
             col.addView(TextView(ctx).apply {
                 text = "${appName(n.app)} · ${rowFmt.format(Date(n.time))}"
                 textSize = 12f
-                setTextColor(0xFF757575.toInt())
+                setTextColor(ctx.getColor(R.color.text_secondary))
             })
             if (n.title.isNotEmpty()) {
                 col.addView(TextView(ctx).apply {
