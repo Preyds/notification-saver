@@ -70,6 +70,7 @@ class MainActivity : Activity() {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(12), dp(16), dp(12), dp(8))
+            setBackgroundColor(ThemeManager.bg(this@MainActivity))
         }
 
         val accessBtn = Button(this).apply {
@@ -88,14 +89,21 @@ class MainActivity : Activity() {
         topRow.addView(accessBtn, weighted())
         topRow.addView(appsBtn, weighted())
 
+        val fixBtn = Button(this).apply {
+            text = "Fix background issues"
+            setOnClickListener { Reliability.showFixDialog(this@MainActivity) }
+        }
+
         status = TextView(this).apply {
             textSize = 13f
             setPadding(0, dp(8), 0, dp(4))
+            setTextColor(ThemeManager.textSecondary(this@MainActivity))
         }
 
         val label = TextView(this).apply {
             text = "Keep notifications for:"
             textSize = 13f
+            setTextColor(ThemeManager.textPrimary(this@MainActivity))
         }
         val spinner = Spinner(this)
         spinner.adapter = ArrayAdapter(
@@ -115,9 +123,34 @@ class MainActivity : Activity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
+        val themeLabel = TextView(this).apply {
+            text = "App theme:"
+            textSize = 13f
+            setTextColor(ThemeManager.textPrimary(this@MainActivity))
+        }
+        val themeSpinner = Spinner(this)
+        themeSpinner.adapter = ArrayAdapter(
+            this, android.R.layout.simple_spinner_dropdown_item, ThemeManager.modeLabels
+        )
+        themeSpinner.setSelection(ThemeManager.getMode(this))
+        themeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?, view: View?, position: Int, id: Long
+            ) {
+                if (position != ThemeManager.getMode(this@MainActivity)) {
+                    ThemeManager.setMode(this@MainActivity, position)
+                    recreate()
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
         search = EditText(this).apply {
             hint = "Search notifications or apps"
             setSingleLine(true)
+            setTextColor(ThemeManager.textPrimary(this@MainActivity))
+            setHintTextColor(ThemeManager.hint(this@MainActivity))
             addTextChangedListener(object : TextWatcher {
                 override fun beforeTextChanged(
                     s: CharSequence?, start: Int, count: Int, after: Int
@@ -148,22 +181,22 @@ class MainActivity : Activity() {
         emptyText = TextView(this).apply {
             textSize = 15f
             setPadding(0, dp(16), 0, dp(16))
+            setTextColor(ThemeManager.textSecondary(this@MainActivity))
         }
 
         adapter = NoteAdapter()
         val listView = ListView(this).apply {
             this.adapter = this@MainActivity.adapter
+            setBackgroundColor(ThemeManager.bg(this@MainActivity))
         }
 
         root.addView(topRow)
-        val fixBtn = Button(this).apply {
-            text = "Fix background issues"
-            setOnClickListener { Reliability.showFixDialog(this@MainActivity) }
-        }
         root.addView(fixBtn)
         root.addView(status)
         root.addView(label)
         root.addView(spinner)
+        root.addView(themeLabel)
+        root.addView(themeSpinner)
         root.addView(search)
         root.addView(actionRow)
         root.addView(emptyText)
@@ -284,19 +317,21 @@ class MainActivity : Activity() {
             col.addView(TextView(ctx).apply {
                 text = "${appName(n.app)} · ${rowFmt.format(Date(n.time))}"
                 textSize = 12f
-                setTextColor(ctx.getColor(R.color.text_secondary))
+                setTextColor(ThemeManager.textSecondary(ctx))
             })
             if (n.title.isNotEmpty()) {
                 col.addView(TextView(ctx).apply {
                     text = n.title
                     textSize = 16f
                     setTypeface(null, Typeface.BOLD)
+                    setTextColor(ThemeManager.textPrimary(ctx))
                 })
             }
             if (n.text.isNotEmpty()) {
                 col.addView(TextView(ctx).apply {
                     text = n.text
                     textSize = 14f
+                    setTextColor(ThemeManager.textPrimary(ctx))
                 })
             }
             row.addView(col, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
@@ -305,6 +340,7 @@ class MainActivity : Activity() {
                 text = "✕"
                 textSize = 20f
                 setPadding(dp(12), dp(4), dp(8), dp(4))
+                setTextColor(ThemeManager.textSecondary(ctx))
                 setOnClickListener {
                     NotificationDb(ctx).deleteById(n.id)
                     refresh()
